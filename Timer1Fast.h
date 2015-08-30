@@ -24,7 +24,6 @@
 
 class TimerOneFast {
   public:
-    void (*user_callback)();
 
     /* initializeFast configures pin modes and registers.
      * the 'microseconds' argument sets the period in microseconds.
@@ -70,6 +69,14 @@ class TimerOneFast {
     /* disbalePwm disables the PWM signal for the specified pin.
      */
     void disablePwm(uint8_t pin);
+
+    /* this user_callback should not be used. Instead, look at these two
+     * functions, specified in Timer1FastBase.h:
+     * void attach_user_interrupt(void (*interrupt)());
+     * void detach_user_interrupt();
+     */
+    void (*user_callback)();
+
 };
 
 extern TimerOneFast Timer1Fast;
