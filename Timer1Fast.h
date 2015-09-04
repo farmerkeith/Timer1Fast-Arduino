@@ -63,6 +63,7 @@ class TimerOneFast {
     /* startPwm sets the PWM signal running on 'pin' with duty cycle 'duty'
      * and period 'microseconds'. Note that you still have to call
      * initializeFast first in order to set the WGM bits.
+     * Specifying 0 for microseconds will leave the period unchanged.
      */
     void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds);
 
