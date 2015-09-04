@@ -371,6 +371,14 @@ void disable_pwm(uint8_t pin) {
     TCCR1A &= ~(_BV(COM1B1)); // disable PB1
 }
 
+// resumes the PWM signal on the selected pin
+void resume_pwm(uint8_t pin) {
+  if (pin == 1 || pin == 9)
+    TCCR1A |= (_BV(COM1A1)); // enable PB0
+  else if (pin == 2 || pin == 10)
+    TCCR1A |= (_BV(COM1B1)); // enable PB1
+}
+
 /* PWM Duty bounds checking functions
  ************************************
  */

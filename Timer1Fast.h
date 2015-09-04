@@ -71,6 +71,10 @@ class TimerOneFast {
      */
     void disablePwm(uint8_t pin);
 
+    /* resumePwm resumes the PWM signal for the specified pin.
+     */
+    void resumePwm(uint8_t pin);
+
     /* this user_callback should not be used. Instead, look at these two
      * functions, specified in Timer1FastBase.h:
      * void attach_user_interrupt(void (*interrupt)());

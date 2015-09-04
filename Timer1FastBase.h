@@ -40,6 +40,7 @@ void increment_pwm_duty(uint8_t pin);
 void decrement_pwm_duty(uint8_t pin);
 void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds);
 void disable_pwm(uint8_t pin);
+void resume_pwm(uint8_t pin);
 
 // These two functions must be called directly from this library, if used.
 void attach_user_interrupt(void (*interrupt)());

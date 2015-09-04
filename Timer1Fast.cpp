@@ -60,6 +60,10 @@ void TimerOneFast::disablePwm(uint8_t pin) {
   disable_pwm(pin);
 }
 
+void TimerOneFast::resumePwm(uint8_t pin) {
+  resume_pwm(pin);
+}
+
 /* The following does not work, use underlying Timer1FastBase equivalents
 void TimerOneFast::attachUserInterrupt(void (*interrupt)()) {
   attach_user_interrupt(interrupt);
