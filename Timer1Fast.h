@@ -67,7 +67,7 @@ class TimerOneFast {
      */
     void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds);
 
-    /* disbalePwm disables the PWM signal for the specified pin.
+    /* disablePwm disables the PWM signal for the specified pin.
      */
     void disablePwm(uint8_t pin);
 
