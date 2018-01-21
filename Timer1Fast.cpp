@@ -52,16 +52,16 @@ void TimerOneFast::decrementPwmDuty(uint8_t pin) {
   decrement_pwm_duty(pin);
 }
 
-void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
-  pwm(pin, duty, microseconds);
+void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
+  pwm(pin, duty, microseconds, invert);
 }
+void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
+  pwm(pin, duty, microseconds, 0);
+}
+
 
 void TimerOneFast::disablePwm(uint8_t pin) {
   disable_pwm(pin);
-}
-
-void TimerOneFast::resumePwm(uint8_t pin) {
-  resume_pwm(pin);
 }
 
 /* The following does not work, use underlying Timer1FastBase equivalents

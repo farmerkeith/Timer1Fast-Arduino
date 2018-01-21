@@ -24,6 +24,7 @@
 
 class TimerOneFast {
   public:
+    void (*user_callback)();
 
     /* initializeFast configures pin modes and registers.
      * the 'microseconds' argument sets the period in microseconds.
@@ -63,25 +64,14 @@ class TimerOneFast {
     /* startPwm sets the PWM signal running on 'pin' with duty cycle 'duty'
      * and period 'microseconds'. Note that you still have to call
      * initializeFast first in order to set the WGM bits.
-     * Specifying 0 for microseconds will leave the period unchanged.
+     * KH added extra parameter "bool invert" to control inverted output
      */
+    void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
     void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds);
 
     /* disablePwm disables the PWM signal for the specified pin.
      */
     void disablePwm(uint8_t pin);
-
-    /* resumePwm resumes the PWM signal for the specified pin.
-     */
-    void resumePwm(uint8_t pin);
-
-    /* this user_callback should not be used. Instead, look at these two
-     * functions, specified in Timer1FastBase.h:
-     * void attach_user_interrupt(void (*interrupt)());
-     * void detach_user_interrupt();
-     */
-    void (*user_callback)();
-
 };
 
 extern TimerOneFast Timer1Fast;

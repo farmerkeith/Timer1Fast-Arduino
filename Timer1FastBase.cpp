@@ -75,9 +75,10 @@ void initialize (uint32_t period) {
 
   // timer Compare Output Mode: clear on Compare Match, set at Bottom
   // (non-inverting mode, rising edges synchronised)
-  TCCR1A &= ~(_BV(COM1A0));
+  TCCR1A &= ~(_BV(COM1A0)); // orginal version
   TCCR1A |= _BV(COM1A1);
-  TCCR1A &= ~(_BV(COM1A0));
+//  TCCR1A &= ~(_BV(COM1A0)); // original version (mistake? should be B0??)
+  TCCR1A &= ~(_BV(COM1B0)); // corrected mistake? made to be B0??
   TCCR1A |= _BV(COM1B1);
 
   set_period_microseconds(period);
@@ -96,19 +97,32 @@ void resume() {
 // (but if microseconds == 0, don't change period). See above note about pin
 // naming systems.
 // Note that initialize() must still be called to set WGM bits.
-void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
+// KH bool invert added with logic to invert pwm output if invert==1
+void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
   if (microseconds > 0) set_period_microseconds_delayed (microseconds);
   if (pin == 1 || pin == 9) { 
     DDRB |= _BV(PORTB1);  // PB1 set to output 
-    // PB1 in non-inverting PWM mode:
-    TCCR1A &= ~(_BV(COM1A0)); // COM1A0 low
-    TCCR1A |= _BV(COM1A1);  // COM1A1 high
+    if (invert){
+      // PB1 in inverting PWM mode:
+      TCCR1A |= _BV(COM1A0);  // COM1A0 high
+      TCCR1A |= _BV(COM1A1);  // COM1A1 high
+    } else {
+      // PB1 in non-inverting PWM mode:
+      TCCR1A &= ~(_BV(COM1A0)); // COM1A0 low
+      TCCR1A |= _BV(COM1A1);  // COM1A1 high
+    }
   }
   else if (pin == 2 || pin == 10) { 
     DDRB |= _BV(PORTB2);  // PB2 set to output 
-    // PB2 in non-inverting PWM mode:
-    TCCR1A &= ~(_BV(COM1B0)); // COM1B0 low
-    TCCR1A |= _BV(COM1B1);  // COM1B1 high
+    if (invert) {
+      // PB2 in inverting PWM mode:
+      TCCR1A |= _BV(COM1B0);  // COM1B0 high
+      TCCR1A |= _BV(COM1B1);  // COM1B1 high
+    } else {
+      // PB2 in non-inverting PWM mode:
+      TCCR1A &= ~(_BV(COM1B0)); // COM1B0 low
+      TCCR1A |= _BV(COM1B1);  // COM1B1 high
+    }
   }
   set_pwm_duty (pin, duty);
   resume(); 
@@ -369,14 +383,6 @@ void disable_pwm(uint8_t pin) {
     TCCR1A &= ~(_BV(COM1A1)); // disable PB0
   else if (pin == 2 || pin == 10)
     TCCR1A &= ~(_BV(COM1B1)); // disable PB1
-}
-
-// resumes the PWM signal on the selected pin
-void resume_pwm(uint8_t pin) {
-  if (pin == 1 || pin == 9)
-    TCCR1A |= (_BV(COM1A1)); // enable PB0
-  else if (pin == 2 || pin == 10)
-    TCCR1A |= (_BV(COM1B1)); // enable PB1
 }
 
 /* PWM Duty bounds checking functions
