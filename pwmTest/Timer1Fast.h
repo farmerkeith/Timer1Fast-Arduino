@@ -20,7 +20,11 @@
 #ifndef TIMERONE_FAST_h
 #define TIMERONE_FAST_h
 
-#include <Timer1FastBase.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdint.h>
+
+#include "Timer1FastBase.h"
 
 class TimerOneFast {
   public:
@@ -29,11 +33,11 @@ class TimerOneFast {
     /* initializeFast configures pin modes and registers.
      * the 'microseconds' argument sets the period in microseconds.
      */
-    void initializeFast(uint32_t microseconds);
+    void initializeFast(unsigned long microseconds);
     
     /* setPeriodMicroseconds sets the PWM period in microseconds. 
      */
-    void setPeriodMicroseconds(uint32_t microseconds);
+    void setPeriodMicroseconds(unsigned long microseconds);
 
     /* incrementPeriod increments the PWM period by the smallest value
      * possible with the current clock prescaler.
@@ -49,7 +53,7 @@ class TimerOneFast {
      * The 'duty' argument is a 16-bit number, with 0xFFFF specifying fully 
      * on, and 0x0000 specifying fully off.
      */
-    void setPwmDuty(uint8_t pin, uint32_t duty);
+    void setPwmDuty(uint8_t pin, unsigned long duty);
 
     /* incrementPwmDuty increments the PWM duty by the smallest value
      * possible with the current clock prescaler.

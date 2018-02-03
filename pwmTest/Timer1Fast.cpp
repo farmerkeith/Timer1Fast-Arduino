@@ -20,48 +20,48 @@
 #ifndef TIMERONE_FAST_cpp
 #define TIMERONE_FAST_cpp
 
-#include <Timer1Fast.h>
+#include "Timer1Fast.h"
 
 TimerOneFast Timer1Fast;	// instance of wrapper object
 
 void TimerOneFast::initializeFast(uint32_t microseconds) {
-  initialize (microseconds);
+//  initialize (microseconds);
 }
 
 void TimerOneFast::setPeriodMicroseconds(uint32_t microseconds) {
-  set_period_microseconds_delayed(microseconds);
+//  set_period_microseconds_delayed(microseconds);
 }
 
 void TimerOneFast::incrementPeriod() {
-  increment_period();
+//  increment_period();
 }
 
 void TimerOneFast::decrementPeriod() {
-  decrement_period();
+//  decrement_period();
 }
 
 void TimerOneFast::setPwmDuty(uint8_t pin, uint32_t duty) {
-  set_pwm_duty(pin, duty);
+//  set_pwm_duty(pin, duty);
 }
 
 void TimerOneFast::incrementPwmDuty(uint8_t pin) {
-  increment_pwm_duty(pin);
+//  increment_pwm_duty(pin);
 }
 
 void TimerOneFast::decrementPwmDuty(uint8_t pin) {
-  decrement_pwm_duty(pin);
+//  decrement_pwm_duty(pin);
 }
 
 void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
-  pwm(pin, duty, microseconds, invert);
+//  pwm(pin, duty, microseconds, invert);
 }
 void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
-  pwm(pin, duty, microseconds, 0);
+//  pwm(pin, duty, microseconds, 0);
 }
 
 
 void TimerOneFast::disablePwm(uint8_t pin) {
-  disable_pwm(pin);
+//  disable_pwm(pin);
 }
 
 /* The following does not work, use underlying Timer1FastBase equivalents
