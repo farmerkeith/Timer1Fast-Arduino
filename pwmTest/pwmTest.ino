@@ -4,6 +4,7 @@
 // hardware configuration constants
 const byte INpin=9;    // main PWM output to IN of IR2184
 const byte SDpin=10;   // SD/ == Enable pin of IR2184. High, Low or PWM depending on mode
+const byte ledPin=13;  // on-board LED 
 
 void setup() {
   // put your setup code here, to run once:
@@ -15,10 +16,17 @@ void setup() {
   // set pin D9 to Output, Low 
   pinMode (INpin , OUTPUT);
   digitalWrite (INpin , LOW);
-  Timer1Fast.initializeFast(15);
-  Timer1Fast.setPeriodMicroseconds(10);
+  // set pin D13 to Output, Low 
+  pinMode (ledPin , OUTPUT);
+  digitalWrite (ledPin , LOW);
+  Timer1Fast.initializeFast(20);
+  Timer1Fast.setPeriodMicroseconds(20);
   Timer1Fast.setPwmDuty(INpin, 32000);
   Timer1Fast.setPwmDuty(SDpin, 40000);
+  Serial.print ("F_CPU=");
+  Serial.print (F_CPU);
+  Serial.print (" MICROSECONDS_PER_SECOND=");
+  Serial.println (MICROSECONDS_PER_SECOND);
 
   
 }
@@ -26,6 +34,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   repeatEvery(10000, countLoops);
+  repeatEvery(1000, flashLed);
 }
 
 void setPeriod(int period){
@@ -58,6 +67,20 @@ unsigned long countLoops (bool flag, unsigned long & Time){
     Serial.print(loopCounter);
     loopCounter=0;
     return loopCounter;
+  }
+  ++loopCounter;
+  Time = lastTime;
+}
+
+unsigned long flashLed (bool flag, unsigned long & Time){
+  // flashes on-board LED 
+  static unsigned long lastTime;
+  static unsigned long loopCounter=0;
+  static bool ledState = 0;
+  if (flag) {
+    lastTime=Time;
+    digitalWrite (ledPin , ledState);
+    ledState = !ledState;
   }
   ++loopCounter;
   Time = lastTime;

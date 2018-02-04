@@ -30,13 +30,15 @@ class TimerOneFast {
   public:
     void (*user_callback)();
 
-    /* initializeFast configures pin modes and registers.
-     * the 'microseconds' argument sets the period in microseconds.
-     */
+    // initializeFast configures pin modes and registers.
+    // the 'clock_cycles' argument sets the period in CPU clock cycles.
+    void initializeFastCycles(unsigned long clock_cycles);
+    // the 'microseconds' argument sets the period in microseconds.
     void initializeFast(unsigned long microseconds);
-    
-    /* setPeriodMicroseconds sets the PWM period in microseconds. 
-     */
+
+    // setPeriodClockCycles sets the PWM period in CPU clock cycles. 
+    void  setPeriodClockCycles(unsigned long clock_cycles);
+    // setPeriodMicroseconds sets the PWM period in microseconds. 
     void setPeriodMicroseconds(unsigned long microseconds);
 
     /* incrementPeriod increments the PWM period by the smallest value
@@ -76,8 +78,22 @@ class TimerOneFast {
     /* disablePwm disables the PWM signal for the specified pin.
      */
     void disablePwm(uint8_t pin);
+  private:
+    // functions
+    void set_period_clock_cycles_common(unsigned long clock_cycles);
+    void update_period_immediate();
+    void correct_duty_after_changing_period();
+    void resume();
+    // variables and constants
+    const uint32_t maximum_period = 65535; // 0xFFFF
+    uint8_t clock_select_bits;
+    uint16_t prescaler_value;
+    uint16_t desired_pwm_period;
+    uint16_t actual_pwm_period;
+
 };
 
+// TimerOneFast Timer1Fast;
 extern TimerOneFast Timer1Fast;
 
 #endif
