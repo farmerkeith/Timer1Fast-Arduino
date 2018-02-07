@@ -37,9 +37,17 @@ void TimerOneFast::initializeFast(uint32_t microseconds) {
   initializeFastCycles(cycles);
 }
 
+byte TimerOneFast::writeBit (byte reg, byte bitPos, bool val){
+  if (val) return reg |= 1<<bitPos;
+  else return reg &= ~(1<<bitPos);
+}
+
+
 void TimerOneFast::initializeFastCycles(unsigned long clock_cycles){
   // set pin mode of outputs
-  DDRB = _BV(PORTB1) | _BV(PORTB2);
+  DDRB = writeBit (DDRB, PORTB1,1);
+  DDRB = writeBit (DDRB, PORTB2,1);
+//  DDRB = _BV(PORTB1) | _BV(PORTB2);
 
   // WGM mode 14: Fast PWM with TOP set by ICR1
   TCCR1A = _BV(WGM11);

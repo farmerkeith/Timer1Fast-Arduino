@@ -41,6 +41,7 @@ void setup() {
   Serial.print (" Timer1Fast actual_pwm_period="); Serial.print (Timer1Fast.actual_pwm_period);
   Serial.print (" Timer1Fast absolute_pwm_duty_pb1="); Serial.print (Timer1Fast.absolute_pwm_duty_pb1);
   Serial.print (" Timer1Fast absolute_pwm_duty_pb2="); Serial.print (Timer1Fast.absolute_pwm_duty_pb2);
+  Serial.print ("\n DDRB="); Serial.print(DDRB, BIN);
   Serial.print ("\n ICR1="); Serial.print(ICR1);
   Serial.print (" OCR1A="); Serial.print(OCR1A);
   Serial.print (" OCR1B="); Serial.print(OCR1B);

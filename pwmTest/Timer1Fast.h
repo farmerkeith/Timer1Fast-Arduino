@@ -136,7 +136,8 @@ class TimerOneFast {
     void decrement_absolute_pwm_duty_pb2 ();
     void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
     void disable_pwm(uint8_t pin);
-
+    byte writeBit (byte reg, byte bitPos, bool val);
+    
 
   public:
     uint8_t clock_select_bits;
