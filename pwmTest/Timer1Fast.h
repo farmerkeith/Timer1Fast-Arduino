@@ -137,7 +137,6 @@ class TimerOneFast {
     void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
     void disable_pwm(uint8_t pin);
     byte writeBit (byte reg, byte bitPos, bool val);
-    
 
   public:
     uint8_t clock_select_bits;
@@ -146,7 +145,24 @@ class TimerOneFast {
     uint16_t actual_pwm_period=0;
     uint16_t absolute_pwm_duty_pb1;
     uint16_t absolute_pwm_duty_pb2;
-
+  public:
+    struct Tccr1a {
+      bool com1a1:1;
+      bool com1a0:1;
+      bool com1b1:1;
+      bool com1b0:1;
+      byte :2;
+      byte wgm101: 2;
+    } tccr1a;      
+    struct Tccr1b {
+      bool icnc1:1;
+      bool ices1:1;
+      bool :1;
+      byte wgm123: 2;
+      byte cs1: 3;
+    } tccr1b;
+    byte wgm1 = tccr1a.wgm101 + 4* tccr1b.wgm123;
+        
 };
 
 // TimerOneFast Timer1Fast;

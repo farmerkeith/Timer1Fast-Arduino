@@ -50,15 +50,23 @@ void TimerOneFast::initializeFastCycles(unsigned long clock_cycles){
 //  DDRB = _BV(PORTB1) | _BV(PORTB2);
 
   // WGM mode 14: Fast PWM with TOP set by ICR1
-  TCCR1A = _BV(WGM11);
-  TCCR1B = _BV(WGM13) | _BV(WGM12);
+  TCCR1A = writeBit (TCCR1A, WGM11,1);
+  TCCR1B = writeBit (TCCR1B, WGM13,1);
+  TCCR1B = writeBit (TCCR1B, WGM12,1);
+
+//  TCCR1A = _BV(WGM11);
+//  TCCR1B = _BV(WGM13) | _BV(WGM12);
 
   // timer Compare Output Mode: clear on Compare Match, set at Bottom
   // (non-inverting mode, rising edges synchronised)
-  TCCR1A &= ~(_BV(COM1A0)); // for port PB1, timer 1A
-  TCCR1A |= _BV(COM1A1);
-  TCCR1A &= ~(_BV(COM1B0)); // for port PB2, timer 1B
-  TCCR1A |= _BV(COM1B1);
+  TCCR1A = writeBit (TCCR1A, COM1A0,0); // for port PB1, timer 1A
+  TCCR1A = writeBit (TCCR1A, COM1A1,1); // 
+//  TCCR1A &= ~(_BV(COM1A0)); // for port PB1, timer 1A
+//  TCCR1A |= _BV(COM1A1);
+  TCCR1A = writeBit (TCCR1A, COM1B0,0); // for port PB1, timer 1B
+  TCCR1A = writeBit (TCCR1A, COM1B1,1); // 
+//  TCCR1A &= ~(_BV(COM1B0)); // for port PB2, timer 1B
+//  TCCR1A |= _BV(COM1B1);
   set_period_clock_cycles_common(clock_cycles);
   update_period_immediate();
   // was  set_period_clock_cycles(clock_cycles);

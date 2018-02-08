@@ -6,17 +6,7 @@ const byte INpin=9;    // main PWM output to IN of IR2184
 const byte SDpin=10;   // SD/ == Enable pin of IR2184. High, Low or PWM depending on mode
 const byte ledPin=13;  // on-board LED 
 
-// extern uint8_t clock_select_bits;
-// extern uint16_t prescaler_value;
-// extern uint16_t desired_pwm_period;
-// extern uint16_t actual_pwm_period;
-// extern uint16_t absolute_pwm_duty_pb1;
-// extern uint16_t absolute_pwm_duty_pb2;
-
-
-
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\n PWM test sketch");
   // set pin D10 to Output, Low 
@@ -46,18 +36,28 @@ void setup() {
   Serial.print (" OCR1A="); Serial.print(OCR1A);
   Serial.print (" OCR1B="); Serial.print(OCR1B);
   Serial.print ("\n TCNT1="); Serial.print(TCNT1);
-  Serial.print ("\n TCCR1A="); Serial.print(TCCR1A);
-  Serial.print (" TCCR1B="); Serial.print(TCCR1B);
-  Serial.print (" TCCR1C="); Serial.print(TCCR1C);
+  Serial.print ("\n TCCR1A="); Serial.print(TCCR1A, BIN);
+  Serial.print (" TCCR1B="); Serial.print(TCCR1B,BIN);
+  Serial.print (" TCCR1C="); Serial.print(TCCR1C,BIN);
   Serial.print ("\n TIFR1="); Serial.print(TIFR1);
   Serial.print (" SREG="); Serial.print(SREG);
   Serial.println();   
-  Timer1Fast.setPeriodClockCycles(150);
+  Timer1Fast.setPeriodClockCycles(250);
 //  Timer1Fast.setPeriodMicroseconds(10);
   Serial.print ("\n ICR1="); Serial.print(ICR1);
   Serial.print (" OCR1A="); Serial.print(OCR1A);
   Serial.print (" OCR1B="); Serial.print(OCR1B);
   Serial.println();   
+//  Timer1Fast.tccr1a = TCCR1A;
+//  TCCR1A = Timer1Fast.tccr1a;
+    Timer1Fast.wgm1 = 0;
+    byte wg = Timer1Fast.wgm1; 
+    Timer1Fast.tccr1a.wgm101 = 2;
+    Timer1Fast.tccr1b.wgm123 = 3;
+    Serial.print ("\n wg="); Serial.print(wg, BIN);
+    Serial.print (" wgm123="); Serial.print(Timer1Fast.tccr1b.wgm123, BIN);
+    Serial.print (" wgm101="); Serial.print(Timer1Fast.tccr1a.wgm101, BIN);
+//    Serial.print (" tccr1a="); Serial.print(Timer1Fast.tccr1a, BIN);
   
 }
 
