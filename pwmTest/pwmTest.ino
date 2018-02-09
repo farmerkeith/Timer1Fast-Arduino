@@ -50,13 +50,14 @@ void setup() {
   Serial.println();   
 //  Timer1Fast.tccr1a = TCCR1A;
 //  TCCR1A = Timer1Fast.tccr1a;
-    Timer1Fast.wgm1 = 0;
-    byte wg = Timer1Fast.wgm1; 
-    Timer1Fast.tccr1a.wgm101 = 2;
-    Timer1Fast.tccr1b.wgm123 = 3;
-    Serial.print ("\n wg="); Serial.print(wg, BIN);
-    Serial.print (" wgm123="); Serial.print(Timer1Fast.tccr1b.wgm123, BIN);
-    Serial.print (" wgm101="); Serial.print(Timer1Fast.tccr1a.wgm101, BIN);
+//    Timer1Fast.wgm1 = 0;
+//    byte wg = Timer1Fast.tccr1a; 
+//    byte wg = Timer1Fast.wgm1; 
+//    Timer1Fast.tccr1a.wgm101 = 2;
+//    Timer1Fast.tccr1b.wgm123 = 3;
+//    Serial.print ("\n wg="); Serial.print(wg, BIN);
+//    Serial.print (" wgm123="); Serial.print(Timer1Fast.tccr1b.wgm123, BIN);
+//    Serial.print (" wgm101="); Serial.print(Timer1Fast.tccr1a.wgm101, BIN);
 //    Serial.print (" tccr1a="); Serial.print(Timer1Fast.tccr1a, BIN);
   
 }
@@ -133,4 +134,5 @@ unsigned long flashLed (bool flag, unsigned long & Time){
   ++loopCounter;
   Time = lastTime;
 }
+
 

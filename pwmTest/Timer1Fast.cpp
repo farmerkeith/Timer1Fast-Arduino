@@ -415,16 +415,12 @@ void  TimerOneFast::set_period_clock_cycles_common(unsigned long clock_cycles){
     prescaler_value = 1024;
   }
   desired_pwm_period = cycles; 
-//  ::clock_select_bits = clock_select_bits;
-//  ::prescaler_value = prescaler_value;
-//  ::desired_pwm_period = desired_pwm_period;
 }
 
 void TimerOneFast::update_period_immediate(){
   uint8_t old_sreg = SREG;
   cli(); // Disable interrupts for 16 bit register access
   ICR1 = actual_pwm_period = desired_pwm_period; // ICR1 is TOP, Fast PWM
-//  ::actual_pwm_period = actual_pwm_period;
   SREG = old_sreg;
   correct_duty_after_changing_period();
   resume(); // ensure clock select bits are updated
