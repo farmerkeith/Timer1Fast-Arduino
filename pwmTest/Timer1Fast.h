@@ -100,13 +100,16 @@ class TimerOneFast {
     void resume();
     void set_period_microseconds_delayed(uint32_t microseconds); // may not be needed
     void set_period_clock_cycles_delayed(uint32_t clock_cycles);
-    void increment_period();
+//    void increment_period();
     void decrement_period();
-    void set_pwm_duty(uint8_t pin, uint32_t duty);
+//    void set_pwm_duty(uint8_t pin, uint32_t duty);
+    unsigned long set_clock_select_bits(unsigned long cycles);
 
     // functions supporting interrupts
   public:
     void (*isr_callback)();
+    byte writeBit (byte reg, byte bitPos, bool val);
+    bool readBit (byte reg, byte bitPos);
   private:
     void attach_library_interrupt(void (*interrupt)());
     void static update_period_callback(); 
@@ -115,6 +118,18 @@ class TimerOneFast {
     void attach_interrupt(void (*isr)());
     void detach_library_interrupt();
     void detach_interrupt();
+//    void increment_pwm_duty(uint8_t pin);
+    void increment_absolute_pwm_duty_pb1 ();
+    void increment_absolute_pwm_duty_pb2 ();
+//    void decrement_pwm_duty(uint8_t pin) ;
+    void decrement_absolute_pwm_duty_pb1 ();
+    void decrement_absolute_pwm_duty_pb2 ();
+    void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
+//    void disable_pwm(uint8_t pin);
+    void setWgm(byte val);
+    void setCom1A(byte val);
+    void setCom1B(byte val);
+    void setPinMode(uint8_t pin, bool invert);
     
 // variables and constants
     const uint32_t maximum_period = 65535; // 0xFFFF
@@ -128,15 +143,6 @@ class TimerOneFast {
     uint16_t proportional_pwm_duty_pb1;
     uint16_t proportional_pwm_duty_pb2;
     uint8_t pwm_duty_set_proportional;
-    void increment_pwm_duty(uint8_t pin);
-    void increment_absolute_pwm_duty_pb1 ();
-    void increment_absolute_pwm_duty_pb2 ();
-    void decrement_pwm_duty(uint8_t pin) ;
-    void decrement_absolute_pwm_duty_pb1 ();
-    void decrement_absolute_pwm_duty_pb2 ();
-    void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
-    void disable_pwm(uint8_t pin);
-    byte writeBit (byte reg, byte bitPos, bool val);
 
   public:
     uint8_t clock_select_bits;

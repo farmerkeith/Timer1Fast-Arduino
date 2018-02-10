@@ -41,36 +41,41 @@ byte TimerOneFast::writeBit (byte reg, byte bitPos, bool val){
   if (val) return reg |= 1<<bitPos;
   else return reg &= ~(1<<bitPos);
 }
+bool TimerOneFast::readBit (byte reg, byte bitPos){
+  return (reg>>bitPos)&1;
+}
 
+void TimerOneFast::setWgm(byte val){
+  if (val>15) val = 15;
+  TCCR1A = writeBit (TCCR1A, WGM10,readBit(val,0));
+  TCCR1A = writeBit (TCCR1A, WGM11,readBit(val,1));
+  TCCR1B = writeBit (TCCR1B, WGM12,readBit(val,2));
+  TCCR1B = writeBit (TCCR1B, WGM13,readBit(val,3));
+}
+
+void TimerOneFast::setCom1A(byte val){ // for port PB1, timer 1A
+  if (val>3) val = 3;
+  TCCR1A = writeBit (TCCR1A, COM1A0,readBit(val,0)); 
+  TCCR1A = writeBit (TCCR1A, COM1A1,readBit(val,1)); 
+}
+
+void TimerOneFast::setCom1B(byte val){ // for port PB1, timer 1B
+  if (val>3) val = 3;
+  TCCR1A = writeBit (TCCR1A, COM1B0,readBit(val,0)); 
+  TCCR1A = writeBit (TCCR1A, COM1B1,readBit(val,1)); 
+}
 
 void TimerOneFast::initializeFastCycles(unsigned long clock_cycles){
   // set pin mode of outputs
-  DDRB = writeBit (DDRB, PORTB1,1);
-  DDRB = writeBit (DDRB, PORTB2,1);
-//  DDRB = _BV(PORTB1) | _BV(PORTB2);
-
-  // WGM mode 14: Fast PWM with TOP set by ICR1
-  TCCR1A = writeBit (TCCR1A, WGM11,1);
-  TCCR1B = writeBit (TCCR1B, WGM13,1);
-  TCCR1B = writeBit (TCCR1B, WGM12,1);
-
-//  TCCR1A = _BV(WGM11);
-//  TCCR1B = _BV(WGM13) | _BV(WGM12);
-
-  // timer Compare Output Mode: clear on Compare Match, set at Bottom
-  // (non-inverting mode, rising edges synchronised)
-  TCCR1A = writeBit (TCCR1A, COM1A0,0); // for port PB1, timer 1A
-  TCCR1A = writeBit (TCCR1A, COM1A1,1); // 
-//  TCCR1A &= ~(_BV(COM1A0)); // for port PB1, timer 1A
-//  TCCR1A |= _BV(COM1A1);
-  TCCR1A = writeBit (TCCR1A, COM1B0,0); // for port PB1, timer 1B
-  TCCR1A = writeBit (TCCR1A, COM1B1,1); // 
-//  TCCR1A &= ~(_BV(COM1B0)); // for port PB2, timer 1B
-//  TCCR1A |= _BV(COM1B1);
+  DDRB = writeBit (DDRB, PORTB1,1); // set port B pin 1 (D9) to Output
+  DDRB = writeBit (DDRB, PORTB2,1); // set port B pin 2 (D10) to Output
+  setWgm(14); // set WGM mode 14: Fast PWM with TOP set by ICR1
+  setCom1A(2); // timer 1A Compare Output Mode: clear on Compare Match, set at Bottom
+    // (non-inverting mode, rising edges synchronised)
+  setCom1B(2); // timer 1B Compare Output Mode (same as timer 1A)
   set_period_clock_cycles_common(clock_cycles);
-  update_period_immediate();
-  // was  set_period_clock_cycles(clock_cycles);
-  resume();
+  update_period_immediate(); // write new value to ICR1 and prescaler
+//  resume(); // update prescaler
 }
 
 void TimerOneFast::setPeriodMicroseconds(uint32_t microseconds) {
@@ -80,7 +85,6 @@ void TimerOneFast::setPeriodMicroseconds(uint32_t microseconds) {
 }
 
 void  TimerOneFast::setPeriodClockCycles(unsigned long clock_cycles){
-  // ToDo - in progress
   set_period_clock_cycles_common(clock_cycles);
   attach_library_interrupt (update_period_callback); // delay the update until overflow
     // update_period_callback is a function that sets ICR1 to the new period (and then checks duty)
@@ -129,10 +133,6 @@ void TimerOneFast::detach_interrupt() {
 }
 
 void TimerOneFast::incrementPeriod() {
-  increment_period();
-}
-
-void TimerOneFast::increment_period() {
   uint32_t next_cycles = desired_pwm_period + 1;
   if (next_cycles <= maximum_period); // OK, nothing to change in clock_select_bits
   else if (clock_select_bits == _BV(CS10)) { // there was no prescaler
@@ -207,13 +207,9 @@ void TimerOneFast::decrement_period() {
   // clock prescaler will be updated by the callback
 }
 
-void TimerOneFast::setPwmDuty(uint8_t pin, uint32_t duty) {
-  set_pwm_duty(pin, duty);
-}
-
 // Note that this considers pins 1 and 9 to be the same pin, just like the
 // original Timer1 library.
-void TimerOneFast::set_pwm_duty(uint8_t pin, uint32_t duty) {
+void TimerOneFast::setPwmDuty(uint8_t pin, uint32_t duty) {
   uint32_t duty_cycle = actual_pwm_period;
   uint8_t old_sreg;
   duty_cycle *= duty;
@@ -249,12 +245,8 @@ void TimerOneFast::set_pwm_duty(uint8_t pin, uint32_t duty) {
   resume(); // ensure clock is running with correct clock_select_bits
 }
 
-void TimerOneFast::incrementPwmDuty(uint8_t pin) {
-  increment_pwm_duty(pin);
-}
-
 // increment pwm duty for appropriate pin
-void TimerOneFast::increment_pwm_duty(uint8_t pin) {
+void TimerOneFast::incrementPwmDuty(uint8_t pin) {
   if (pin == 1 || pin == 9) {
     increment_absolute_pwm_duty_pb1();
   }
@@ -283,12 +275,8 @@ void TimerOneFast::increment_absolute_pwm_duty_pb2 () {
   }
 }
 
-void TimerOneFast::decrementPwmDuty(uint8_t pin) {
-  decrement_pwm_duty(pin);
-}
-
 // decrement pwm duty for appropriate pin
-void TimerOneFast::decrement_pwm_duty(uint8_t pin) {
+void TimerOneFast::decrementPwmDuty(uint8_t pin) {
   if (pin == 1 || pin == 9) {
     decrement_absolute_pwm_duty_pb1();
   }
@@ -316,60 +304,67 @@ void TimerOneFast::decrement_absolute_pwm_duty_pb2 () {
   }
 }
 
-void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
-  pwm(pin, duty, microseconds, invert);
-}
+// set data direction and compare output mode register bits
+void TimerOneFast::setPinMode(uint8_t pin, bool invert){
+  if (pin == 1 || pin == 9) { 
+    DDRB = writeBit (DDRB, PORTB1, 1); // set port B pin 1 (D9) to Output
+    // DDRB |= _BV(PORTB1);  // PB1 set to output 
+    if (invert){
+      // PB1 in inverting PWM mode:
+      setCom1A(3); // timer 1A Compare Output Mode: clear on Compare Match, set at Bottom
+      // (inverting mode, falling edges synchronised)
+//      TCCR1A |= _BV(COM1A0);  // COM1A0 high
+//      TCCR1A |= _BV(COM1A1);  // COM1A1 high
+    } else { // non-invert
+      // PB1 in non-inverting PWM mode:
+      setCom1A(2); // timer 1A Compare Output Mode: clear on Compare Match, set at Bottom
+      // (non-inverting mode, rising edges synchronised)
+//      TCCR1A &= ~(_BV(COM1A0)); // COM1A0 low
+//      TCCR1A |= _BV(COM1A1);  // COM1A1 high
+    }
+  } else if (pin == 2 || pin == 10) { 
+    DDRB = writeBit (DDRB, PORTB2,1); // set port B pin 2 (D10) to Output
+    //DDRB |= _BV(PORTB2);  // PB2 set to output 
+    if (invert) {
+      setCom1B(3); // timer 1B Compare Output Mode (same as timer 1A)
+      // PB2 in inverting PWM mode:
+//      TCCR1A |= _BV(COM1B0);  // COM1B0 high
+//      TCCR1A |= _BV(COM1B1);  // COM1B1 high
+    } else {  // non-invert
+      // PB2 in non-inverting PWM mode:
+      setCom1B(2); // timer 1B Compare Output Mode (same as timer 1A)
+//      TCCR1A &= ~(_BV(COM1B0)); // COM1B0 low
+//      TCCR1A |= _BV(COM1B1);  // COM1B1 high
+    }
+  }
+}  
+
 void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
-  pwm(pin, duty, microseconds, 0);
+  startPwm(pin, duty, microseconds, 0);
 }
 
 // set PWM signal on selected pin with selected duty and period in microseconds
-// (but if microseconds == 0, don't change period). See above note about pin
-// naming systems.
+// (but if microseconds == 0, don't change period). 
+// pin==1 assumed to be the same as pin==9; and pin==2 assumed to be the same as pin==10.
 // Note that initialize() must still be called to set WGM bits.
-// KH bool invert added with logic to invert pwm output if invert==1
-void TimerOneFast::pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
+// bool invert added with logic to invert pwm output if invert==1
+//   void TimerOneFast::pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
+void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
   if (microseconds > 0) set_period_microseconds_delayed (microseconds);
-  if (pin == 1 || pin == 9) { 
-    DDRB |= _BV(PORTB1);  // PB1 set to output 
-    if (invert){
-      // PB1 in inverting PWM mode:
-      TCCR1A |= _BV(COM1A0);  // COM1A0 high
-      TCCR1A |= _BV(COM1A1);  // COM1A1 high
-    } else {
-      // PB1 in non-inverting PWM mode:
-      TCCR1A &= ~(_BV(COM1A0)); // COM1A0 low
-      TCCR1A |= _BV(COM1A1);  // COM1A1 high
-    }
-  }
-  else if (pin == 2 || pin == 10) { 
-    DDRB |= _BV(PORTB2);  // PB2 set to output 
-    if (invert) {
-      // PB2 in inverting PWM mode:
-      TCCR1A |= _BV(COM1B0);  // COM1B0 high
-      TCCR1A |= _BV(COM1B1);  // COM1B1 high
-    } else {
-      // PB2 in non-inverting PWM mode:
-      TCCR1A &= ~(_BV(COM1B0)); // COM1B0 low
-      TCCR1A |= _BV(COM1B1);  // COM1B1 high
-    }
-  }
-  set_pwm_duty (pin, duty);
+  setPinMode(pin, invert);
+  setPwmDuty (pin, duty);
   resume(); 
 }
 
-void TimerOneFast::disablePwm(uint8_t pin) {
-  disable_pwm(pin);
-}
-
 // disables the PWM signal on the selected pin
-void TimerOneFast::disable_pwm(uint8_t pin) {
+void TimerOneFast::disablePwm(uint8_t pin) {
   if (pin == 1 || pin == 9)
-    TCCR1A &= ~(_BV(COM1A1)); // disable PB0
+    setCom1A(0); // for port PB1, timer 1A
+//    TCCR1A &= ~(_BV(COM1A1)); // disable PB1
   else if (pin == 2 || pin == 10)
-    TCCR1A &= ~(_BV(COM1B1)); // disable PB1
+    setCom1B(0); // for port PB2, timer 1B
+//    TCCR1A &= ~(_BV(COM1B1)); // disable PB2
 }
-
 
 
 // --------------------------
@@ -385,25 +380,35 @@ void TimerOneFast::detachUserInterrupt() {
   detach_user_interrupt();
 }
 */
-// common function used by delayed and immediate PWM period-setting functions
-void  TimerOneFast::set_period_clock_cycles_common(unsigned long clock_cycles){
-  uint32_t cycles = clock_cycles; 
-  if (cycles < maximum_period) {
-    clock_select_bits = _BV(CS10); // no prescaler
+unsigned long TimerOneFast::set_clock_select_bits(unsigned long cycles){
+  if (cycles <= maximum_period) {
+    clock_select_bits =1;
+//    clock_select_bits = _BV(CS10); // no prescaler
     prescaler_value = 1;
   }
   else if ((cycles >>=3) <= maximum_period) {
-    clock_select_bits = _BV(CS11); // prescaler set to 8
+    clock_select_bits =2;
+//    clock_select_bits = _BV(CS11); // prescaler set to 8
     prescaler_value = 8;
   }
   else if ((cycles >>=3) <= maximum_period) {
-    clock_select_bits = _BV(CS11) | _BV(CS10); //prescaler set to 64
+    clock_select_bits =3;
+//    clock_select_bits = _BV(CS11) | _BV(CS10); //prescaler set to 64
     prescaler_value = 64;
   }
   else if ((cycles >>=2) <= maximum_period) {
-    clock_select_bits = _BV(CS12); //prescaler set to 256
+    clock_select_bits =4;
+//    clock_select_bits = _BV(CS12); //prescaler set to 256
     prescaler_value = 256;
   }
+  else {
+    cycles >>=2; // final divide by 4
+    clock_select_bits =5;
+    prescaler_value = 1024;
+  }
+  if (cycles > maximum_period) cycles = maximum_period;
+  return cycles;
+/*  
   // ToDo: remove these 2 tests and just set prescaler to 1024
   else if ((cycles >>=2) <= maximum_period) {
     clock_select_bits = _BV(CS12) | _BV(CS10); //prescaler set to 1024
@@ -414,16 +419,22 @@ void  TimerOneFast::set_period_clock_cycles_common(unsigned long clock_cycles){
     clock_select_bits = _BV(CS12) | _BV(CS10);
     prescaler_value = 1024;
   }
-  desired_pwm_period = cycles; 
+*/
 }
 
-void TimerOneFast::update_period_immediate(){
-  uint8_t old_sreg = SREG;
+// common function used by delayed and immediate PWM period-setting functions
+void  TimerOneFast::set_period_clock_cycles_common(unsigned long cycles){
+  desired_pwm_period = set_clock_select_bits(cycles);
+//  desired_pwm_period = cycles; 
+}
+
+void TimerOneFast::update_period_immediate(){ // write new value to ICR1
+  uint8_t old_sreg = SREG; // save current interrupt status (+)
   cli(); // Disable interrupts for 16 bit register access
   ICR1 = actual_pwm_period = desired_pwm_period; // ICR1 is TOP, Fast PWM
-  SREG = old_sreg;
+  SREG = old_sreg; // restore previous interrupt status (+)
   correct_duty_after_changing_period();
-  resume(); // ensure clock select bits are updated
+  resume(); // update clock select bits 
 }
 
 // attach interrupt to library_callback and ensure that isr_callback is active
@@ -460,7 +471,8 @@ void static TimerOneFast::update_period_callback() {
 void TimerOneFast::attach_interrupt(void (*isr)()) {
   isr_callback = isr;
   isr_callback_enabled = 1;
-  TIMSK1 |= _BV(TOIE1); // set timer overflow interrupt enable bit
+  TIMSK1 = writeBit (TIMSK1, TOIE1, 1); // set timer overflow interrupt enable bit
+//  TIMSK1 |= _BV(TOIE1); // set timer overflow interrupt enable bit
   resume(); 
 }
 
@@ -514,8 +526,12 @@ void TimerOneFast::update_actual_absolute_pwm_duty_pb2(){
 
 // set clock running with previously-specified clock_select_bits
 void  TimerOneFast::resume(){
-  TCCR1B &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12));
-  TCCR1B |= clock_select_bits;
+  TCCR1B = writeBit (TCCR1B, CS10, readBit(clock_select_bits,0));
+  TCCR1B = writeBit (TCCR1B, CS11, readBit(clock_select_bits,1));
+  TCCR1B = writeBit (TCCR1B, CS12, readBit(clock_select_bits,2));
+  
+//  TCCR1B &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12)); // sets cs bits to 0
+//  TCCR1B |= clock_select_bits; // writes new cs bit values
 }
 
 
