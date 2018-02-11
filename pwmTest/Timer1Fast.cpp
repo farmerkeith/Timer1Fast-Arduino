@@ -24,13 +24,6 @@
 
 TimerOneFast Timer1Fast;	// instance of wrapper object
 
-// extern uint8_t clock_select_bits;
-// extern uint16_t prescaler_value;
-// extern uint16_t desired_pwm_period;
-// extern uint16_t actual_pwm_period;
-// extern uint16_t absolute_pwm_duty_pb1;
-// extern uint16_t absolute_pwm_duty_pb2;
-
 void TimerOneFast::initializeFast(uint32_t microseconds) {
 //  initialize (microseconds);
   uint32_t cycles = (F_CPU / microseconds_per_second) * microseconds;
@@ -73,9 +66,10 @@ void TimerOneFast::initializeFastCycles(unsigned long clock_cycles){
   setCom1A(2); // timer 1A Compare Output Mode: clear on Compare Match, set at Bottom
     // (non-inverting mode, rising edges synchronised)
   setCom1B(2); // timer 1B Compare Output Mode (same as timer 1A)
-  set_period_clock_cycles_common(clock_cycles);
+  desired_pwm_period = set_clock_select_bits(clock_cycles);
+//  set_period_clock_cycles_common(clock_cycles);
   update_period_immediate(); // write new value to ICR1 and prescaler
-//  resume(); // update prescaler
+//  resume(); // update prescaler - done by update_period_immediate()
 }
 
 void TimerOneFast::setPeriodMicroseconds(uint32_t microseconds) {
@@ -85,7 +79,8 @@ void TimerOneFast::setPeriodMicroseconds(uint32_t microseconds) {
 }
 
 void  TimerOneFast::setPeriodClockCycles(unsigned long clock_cycles){
-  set_period_clock_cycles_common(clock_cycles);
+  desired_pwm_period = set_clock_select_bits(clock_cycles);
+//  set_period_clock_cycles_common(clock_cycles);
   attach_library_interrupt (update_period_callback); // delay the update until overflow
     // update_period_callback is a function that sets ICR1 to the new period (and then checks duty)
     // attach_library_interrupt is a function that takes a pointer as its argument 
@@ -129,11 +124,14 @@ void TimerOneFast::detach_library_interrupt() {
 // disable the actual overflow interrupt
 void TimerOneFast::detach_interrupt() {
   isr_callback_enabled = 0;
-  TIMSK1 &= ~_BV(TOIE1); // clear the timer overflow interrupt enable bit
+  TIMSK1 = writeBit (TIMSK1, TOIE1, 0);  // clear the timer overflow interrupt enable bit
+//  TIMSK1 &= ~_BV(TOIE1); // clear the timer overflow interrupt enable bit
 }
 
 void TimerOneFast::incrementPeriod() {
-  uint32_t next_cycles = desired_pwm_period + 1;
+  uint32_t next_cycles = (long)desired_pwm_period + 1;
+//  Serial.print ("\n line 130 next_cycles="); Serial.print (next_cycles);
+//  Serial.print (" clock_select_bits="); Serial.print (clock_select_bits);
   if (next_cycles <= maximum_period); // OK, nothing to change in clock_select_bits
   else if (clock_select_bits == _BV(CS10)) { // there was no prescaler
     next_cycles >>= 3; // divide next_cycles by 8
@@ -145,7 +143,7 @@ void TimerOneFast::incrementPeriod() {
     clock_select_bits = _BV(CS10) | _BV(CS11); // set prescaler to 64
     prescaler_value = 64;
   }
-  else if (clock_select_bits == _BV(CS10) | _BV(CS11)) { // prescaler was 64
+  else if (clock_select_bits == (_BV(CS10) | _BV(CS11))) { // prescaler was 64
     next_cycles >>= 2; // divide next_cycles by 4
     clock_select_bits = _BV(CS12); // set prescaler to 256
     prescaler_value = 256;
@@ -162,16 +160,11 @@ void TimerOneFast::incrementPeriod() {
     // this case if prescaler == 1024 and next_cycles >= RESOLUTION
   }
   desired_pwm_period = next_cycles;
-  //update_period_immediate();
   attach_library_interrupt (update_period_callback); // delay the update until overflow
   // clock prescaler will be updated by the callback
 }
 
 void TimerOneFast::decrementPeriod() {
-  decrement_period();
-}
-
-void TimerOneFast::decrement_period() {
   uint32_t next_cycles = desired_pwm_period;
   uint16_t min_cycles;
 
@@ -182,7 +175,7 @@ void TimerOneFast::decrement_period() {
   else if (prescaler_value == 256) min_cycles = resolution >> 2;
   else if (prescaler_value == 1024) min_cycles = resolution >> 2;
 
-  if (next_cycles >= min_cycles) next_cycles -= 1; // nothing to change in clock_select_bits, just decrement next_cycles.
+  if (next_cycles > min_cycles) next_cycles -= 1; // nothing to change in clock_select_bits, just decrement next_cycles.
   else if (clock_select_bits == _BV(CS10)) { // there was no prescaler
     next_cycles = minimum_period; // cycles < 3 is invalid, so 3 is the minimum.
   }
@@ -190,7 +183,7 @@ void TimerOneFast::decrement_period() {
     next_cycles = maximum_period; // set next_cycles to maximum
     clock_select_bits = _BV(CS10); // remove prescaler
   }
-  else if (clock_select_bits == _BV(CS10) | _BV(CS11)) { // prescaler was 64
+  else if (clock_select_bits == (_BV(CS10) | _BV(CS11))) { // prescaler was 64
     next_cycles = maximum_period; // set next_cycles to maximum
     clock_select_bits = _BV(CS11); // set prescaler to 8
   }
@@ -209,6 +202,7 @@ void TimerOneFast::decrement_period() {
 
 // Note that this considers pins 1 and 9 to be the same pin, just like the
 // original Timer1 library.
+// duty is a proportional value between 0 and 65,535 (100%)
 void TimerOneFast::setPwmDuty(uint8_t pin, uint32_t duty) {
   uint32_t duty_cycle = actual_pwm_period;
   uint8_t old_sreg;
@@ -346,10 +340,10 @@ void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds) {
 // set PWM signal on selected pin with selected duty and period in microseconds
 // (but if microseconds == 0, don't change period). 
 // pin==1 assumed to be the same as pin==9; and pin==2 assumed to be the same as pin==10.
-// Note that initialize() must still be called to set WGM bits.
 // bool invert added with logic to invert pwm output if invert==1
 //   void TimerOneFast::pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
 void TimerOneFast::startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert) {
+  setWgm(14);
   if (microseconds > 0) set_period_microseconds_delayed (microseconds);
   setPinMode(pin, invert);
   setPwmDuty (pin, duty);
@@ -423,10 +417,10 @@ unsigned long TimerOneFast::set_clock_select_bits(unsigned long cycles){
 }
 
 // common function used by delayed and immediate PWM period-setting functions
-void  TimerOneFast::set_period_clock_cycles_common(unsigned long cycles){
-  desired_pwm_period = set_clock_select_bits(cycles);
-//  desired_pwm_period = cycles; 
-}
+// void  TimerOneFast::set_period_clock_cycles_common(unsigned long cycles){
+//   desired_pwm_period = set_clock_select_bits(cycles);
+//   desired_pwm_period = cycles; 
+// }
 
 void TimerOneFast::update_period_immediate(){ // write new value to ICR1
   uint8_t old_sreg = SREG; // save current interrupt status (+)

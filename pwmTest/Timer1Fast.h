@@ -89,8 +89,8 @@ class TimerOneFast {
     
   private:
     // functions
-    void set_period_clock_cycles(unsigned long clock_cycles);
-    void set_period_clock_cycles_common(unsigned long clock_cycles);
+//    void set_period_clock_cycles(unsigned long clock_cycles);
+//    void set_period_clock_cycles_common(unsigned long clock_cycles);
     void update_period_immediate();
     void correct_duty_after_changing_period();
     void check_pwm_duty_bounds_pb1();
@@ -101,7 +101,7 @@ class TimerOneFast {
     void set_period_microseconds_delayed(uint32_t microseconds); // may not be needed
     void set_period_clock_cycles_delayed(uint32_t clock_cycles);
 //    void increment_period();
-    void decrement_period();
+//    void decrement_period();
 //    void set_pwm_duty(uint8_t pin, uint32_t duty);
     unsigned long set_clock_select_bits(unsigned long cycles);
 
@@ -124,7 +124,7 @@ class TimerOneFast {
 //    void decrement_pwm_duty(uint8_t pin) ;
     void decrement_absolute_pwm_duty_pb1 ();
     void decrement_absolute_pwm_duty_pb2 ();
-    void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
+//    void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
 //    void disable_pwm(uint8_t pin);
     void setWgm(byte val);
     void setCom1A(byte val);

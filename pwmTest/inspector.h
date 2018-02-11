@@ -154,18 +154,27 @@ void inspector::clock_select(){
   byte csb = readBit(TCCR1B,0);
   csb += 2* readBit(TCCR1B,1);
   csb += 4* readBit(TCCR1B,2);
+  int prescaler = 1;
+  switch (csb){
+    case 1: prescaler = 1; break;
+    case 2: prescaler = 8; break;
+    case 3: prescaler = 64; break;
+    case 4: prescaler = 256; break;
+    case 5: prescaler = 1024; break;
+    default: prescaler = 1; break;
+  }
   Serial.print (F("\n csb="));
   Serial.print (csb);
   switch (csb){
     case 0: Serial.print (F(" T/Counter stopped")); break;
-    case 1: Serial.print (F(" prescaler = 1")); break;
-    case 2: Serial.print (F(" prescaler = 8")); break;
-    case 3: Serial.print (F(" prescaler = 64")); break;
-    case 4: Serial.print (F(" prescaler = 256")); break;
-    case 5: Serial.print (F(" prescaler = 1024")); break;
+    case 1: case 2: case 3: case 4: case 5: 
+      Serial.print (F(" prescaler=")); 
+      Serial.print (prescaler);
+      break;
     case 6: Serial.print (F(" ext. clock on T1, falling")); break;
     case 7: Serial.print (F(" ext. clock on T1, rising")); break;
   }
+  Serial.print (F(" clocks=")); Serial.print ((long)ICR1 * prescaler);
 }
 
 void inspector::tifr1(){

@@ -20,7 +20,7 @@ void setup() {
   pinMode (ledPin , OUTPUT);
   digitalWrite (ledPin , LOW);
 //  Timer1Fast.dummy();
-  Timer1Fast.initializeFastCycles(320);
+  Timer1Fast.initializeFastCycles(65558);
 //  Serial.print ("\n TCCR1A="); Serial.print(TCCR1A, BIN);
 //  inspector.all();
 //  Timer1Fast.initializeFast(20);
@@ -93,7 +93,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   repeatEvery(8000, countLoops);
-  repeatEvery(1000, flashLed);
+  repeatEvery(4200, flashLed);
 }
 
 void setPeriod(int period){
@@ -145,16 +145,18 @@ unsigned long flashLed (bool flag, unsigned long & Time){
     counter ++;
     if (counter>100) counter=1;
     Serial.print ("\n counter="); Serial.print(counter);
-    long us = (long)counter*counter*counter*20;
-    Serial.print ("\n period us="); Serial.print(us);
-    Timer1Fast.setPeriodMicroseconds(us);
+//    long us = (long)counter*counter*counter*20;
+//    Serial.print ("\n period us="); Serial.print(us);
+      Timer1Fast.decrementPeriod();
+//      Timer1Fast.incrementPeriod();
+//    Timer1Fast.setPeriodMicroseconds(us);
 //    if (ledState) Timer1Fast.setPeriodMicroseconds(us);
     Timer1Fast.incrementPwmDuty(INpin);
     Timer1Fast.incrementPwmDuty(SDpin);
     
-    Serial.print ("\n period us="); Serial.print(us);
-    Serial.print (" clocks="); Serial.print(us*16);
-    Serial.print (" ICR1="); Serial.print(ICR1);
+//    Serial.print ("\n period us="); Serial.print(us);
+//    Serial.print (" clocks="); Serial.print(us*16);
+    Serial.print ("\n ICR1="); Serial.print(ICR1);
     Serial.print (" OCR1A="); Serial.print(OCR1A);
     Serial.print (" OCR1B="); Serial.print(OCR1B);
     Serial.print (" TCCR1B="); Serial.print(TCCR1B);
@@ -163,6 +165,7 @@ unsigned long flashLed (bool flag, unsigned long & Time){
     Serial.print ("\n Timer1Fast.actual_pwm_period="); 
     Serial.print(Timer1Fast.actual_pwm_period);
     inspector.clock_select();
+    
 //    inspector.all();
     Serial.println();   
   }
