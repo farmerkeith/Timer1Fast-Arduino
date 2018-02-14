@@ -33,12 +33,12 @@ class TimerOneFast {
 
     // initializeFast configures pin modes and registers.
     // the 'clock_cycles' argument sets the period in CPU clock cycles.
-    void initializeFastCycles(unsigned long clock_cycles);                // Done
+    void initializeFastCycles(unsigned long clock_cycles);                
     // the 'microseconds' argument sets the period in microseconds.
-    void initializeFast(unsigned long microseconds);                      // Done
+    void initializeFast(unsigned long microseconds);                      
 
     // setPeriodClockCycles sets the PWM period in CPU clock cycles. 
-    void  setPeriodClockCycles(unsigned long clock_cycles);               // Done
+    void  setPeriodClockCycles(unsigned long clock_cycles);               
     
     // setPeriodMicroseconds sets the PWM period in microseconds. 
     // period is 250ns to 4096 us in steps of 62.5 ns
@@ -76,9 +76,8 @@ class TimerOneFast {
     void decrementPwmDuty(uint8_t pin);
 
     /* startPwm sets the PWM signal running on 'pin' with duty cycle 'duty'
-     * and period 'microseconds'. Note that you still have to call
-     * initializeFast first in order to set the WGM bits.
-     * KH added extra parameter "bool invert" to control inverted output
+     * and period 'microseconds'. startPwm also sets the WGM bits.
+     * extra parameter "bool invert" to control inverted output
      */
     void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
     void startPwm(uint8_t pin, uint32_t duty, uint32_t microseconds);
@@ -89,8 +88,6 @@ class TimerOneFast {
     
   private:
     // functions
-//    void set_period_clock_cycles(unsigned long clock_cycles);
-//    void set_period_clock_cycles_common(unsigned long clock_cycles);
     void update_period_immediate();
     void correct_duty_after_changing_period();
     void check_pwm_duty_bounds_pb1();
@@ -98,11 +95,6 @@ class TimerOneFast {
     void update_actual_absolute_pwm_duty_pb1();
     void update_actual_absolute_pwm_duty_pb2();
     void resume();
-    void set_period_microseconds_delayed(uint32_t microseconds); // may not be needed
-    void set_period_clock_cycles_delayed(uint32_t clock_cycles);
-//    void increment_period();
-//    void decrement_period();
-//    void set_pwm_duty(uint8_t pin, uint32_t duty);
     unsigned long set_clock_select_bits(unsigned long cycles);
 
     // functions supporting interrupts
@@ -118,14 +110,10 @@ class TimerOneFast {
     void attach_interrupt(void (*isr)());
     void detach_library_interrupt();
     void detach_interrupt();
-//    void increment_pwm_duty(uint8_t pin);
     void increment_absolute_pwm_duty_pb1 ();
     void increment_absolute_pwm_duty_pb2 ();
-//    void decrement_pwm_duty(uint8_t pin) ;
     void decrement_absolute_pwm_duty_pb1 ();
     void decrement_absolute_pwm_duty_pb2 ();
-//    void pwm(uint8_t pin, uint32_t duty, uint32_t microseconds, bool invert);
-//    void disable_pwm(uint8_t pin);
     void setWgm(byte val);
     void setCom1A(byte val);
     void setCom1B(byte val);
@@ -151,28 +139,8 @@ class TimerOneFast {
     uint16_t actual_pwm_period=0;
     uint16_t absolute_pwm_duty_pb1;
     uint16_t absolute_pwm_duty_pb2;
-/*    
-  public:
-    struct Tccr1a {
-      bool com1a1:1;
-      bool com1a0:1;
-      bool com1b1:1;
-      bool com1b0:1;
-      byte :2;
-      byte wgm101: 2;
-    } tccr1a;      
-    struct Tccr1b {
-      bool icnc1:1;
-      bool ices1:1;
-      bool :1;
-      byte wgm123: 2;
-      byte cs1: 3;
-    } tccr1b;
-    byte wgm1 = tccr1a.wgm101 + 4* tccr1b.wgm123;
-*/
 };
 
-// TimerOneFast Timer1Fast;
 extern TimerOneFast Timer1Fast;
 
 #endif

@@ -147,7 +147,6 @@ void inspector::com1b(){
   if (wgm1==13){ // wgm value reserved, not in use 
     Serial.print (F(" reserved wgm1 value, com1b not defined"));
   }
-// ---------------------------------
 }
 
 void inspector::clock_select(){

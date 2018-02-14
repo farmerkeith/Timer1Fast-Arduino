@@ -1,4 +1,4 @@
-// libraries
+// tab files // libraries
 #include "repeatEvery.h"
 #include "Timer1Fast.h"
 #include "inspector.h"
@@ -93,7 +93,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   repeatEvery(8000, countLoops);
-  repeatEvery(4200, flashLed);
+  repeatEvery(1000, flashLed);
 }
 
 void setPeriod(int period){
